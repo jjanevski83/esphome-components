@@ -51,7 +51,8 @@ namespace esphome
                 return;
 
             int level = holder->getVentilationLevel();
-            auto options = this->traits.get_options();
+            // << GEÄNDERT: Verwende const reference statt Kopie
+            const auto &options = this->traits.get_options();
             if (level < 0 || level >= static_cast<int>(options.size()))
                 return;
 

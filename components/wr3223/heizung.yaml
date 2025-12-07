@@ -1,0 +1,82 @@
+esphome:
+  name: heizung
+  friendly_name: Heizung
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+  level: DEBUG
+
+#external_components:
+#  - source:
+#      type: git
+#      url: https://github.com/schmurgel-tg/esphome-components
+#    refresh: 0s
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "e/+++jk8p5jje+3GA6YMj0kZFTOVWIONkdJ6QBXf+Xk="
+
+ota:
+  - platform: esphome
+    password: "54137a410e3b9d95c539422b5265e969"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Heizung Fallback Hotspot"
+    password: "z91mSELtmK0X"
+
+captive_portal:
+
+uart:
+  - id: uart_bus
+    tx_pin: GPIO19
+    rx_pin: GPIO18
+    baud_rate: 9600
+    data_bits: 7
+    parity: EVEN
+    stop_bits: 1
+
+wr3223:
+  uart_id: uart_bus
+
+# Sensoren für Temperaturen und Drehzahlen
+sensor:
+  - platform: wr3223
+    ewt_present: true
+
+
+# Select-Komponenten für Lüftungsstufe und Betriebsmodus
+select:
+  - platform: wr3223
+
+
+# Number-Komponenten für Lüftungsgeschwindigkeiten
+number:
+  - platform: wr3223
+    ewt_present: true           # Aktiviert EWT-Parameter
+    air_balance_present: true   # Aktiviert Luftbalance-Parameter
+
+
+# Switch-Komponenten für Wärmepumpe, Zusatzheizung und Kühlung
+switch:
+  - platform: wr3223
+
+
+# Binary-Sensoren für Relais-Status
+binary_sensor:
+  - platform: wr3223
+
+
+# Button-Komponenten für Systemsteuerung
+button:
+  - platform: wr3223
