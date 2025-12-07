@@ -49,7 +49,7 @@ namespace esphome
                 return;
 
             int mode = holder->get_mode();
-            auto options = this->traits.get_options();
+            const auto &options = this->traits.get_options();
             if (mode < 0 || mode >= static_cast<int>(options.size()))
                 return;
 
