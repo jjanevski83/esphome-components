@@ -1,3 +1,5 @@
+#include <map>
+#include <string>
 #include "wr3223_error_component.h"
 #include "esphome/core/log.h"
 
