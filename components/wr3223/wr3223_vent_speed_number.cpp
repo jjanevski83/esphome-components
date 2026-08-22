@@ -34,15 +34,17 @@ namespace esphome
             if (cmd == nullptr || parent_ == nullptr || parent_->connector_ == nullptr)
                 return;
 
-                // DEINE ANPASSUNG: Feste Standardwerte für die Temperaturen erzwingen
+            // Feste Standardwerte für die Temperaturen beim Booten erzwingen
             if (level_ == 10) {
                 this->publish_state(21.5);
-                this->control(21.5); // Schickt den Wert direkt beim Start an die Anlage
+                
+                // WICHTIG: Wir schicken der Anlage parallel einen festen Raumwert (T4 = 22.0),
+                // damit sie den -70°C Fehler aufhebt und Schreibbefehle freischaltet!
+                this->parent_->connector_->send_write_request("T4", "220", [](char *, bool ok) {});
                 return;
             }
             if (level_ == 20) {
                 this->publish_state(20.0);
-                this->control(20.0); // Schickt den Wert direkt beim Start an die Anlage
                 return;
             }
 
@@ -79,8 +81,9 @@ namespace esphome
             parent_->connector_->send_write_request(cmd, data, [this, value](char *, bool ok)
                                                     {
             ESP_LOGD(TAG, "Write result %d for state %.1f", ok, value);
-            if (ok)
-                this->publish_state(value); });
+            //if (ok)
+                this->publish_state(value); 
+            });
         }
 
     } // namespace wr3223
