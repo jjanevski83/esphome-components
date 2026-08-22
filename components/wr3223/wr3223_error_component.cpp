@@ -1,5 +1,6 @@
 #include "wr3223_error_component.h"
 #include "esphome/core/log.h"
+#include <map>  // <-- DIESE ZEILE HINZUFÜGEN
 
 namespace esphome
 {
