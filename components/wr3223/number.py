@@ -17,6 +17,8 @@ WR3223NumberControl = wr3223_ns.class_(
     "WR3223NumberControl", number.Number, cg.Component
 )
 
+
+
 CONF_NUMBERS = "numbers"
 CONF_VENT_LEVEL_1_SPEED = "vent_level_1_speed"
 CONF_VENT_LEVEL_2_SPEED = "vent_level_2_speed"
@@ -79,7 +81,7 @@ CONFIG_SCHEMA = cv.Schema(
                     "Luftstufe 3 Geschwindigkeit"
                 ),
                 cv.Optional(CONF_SUPPLY_TEMP_SETPOINT, default={}): _sp_schema(
-                    "Zuluftsolltemperatur"
+                    "RaumSollTemperatur"
                 ),
             }
         ),
@@ -111,7 +113,7 @@ async def to_code(config):
 
     sp_conf = numbers_conf.get(CONF_SUPPLY_TEMP_SETPOINT)
     if sp_conf is not None and not sp_conf.get(CONF_DEACTIVATE):
-        var = cg.new_Pvariable(sp_conf[CONF_ID], parent, "SP", True)
+        var = cg.new_Pvariable(sp_conf[CONF_ID], parent, "Rd", True)
         await cg.register_component(var, sp_conf)
         await number.register_number(
             var,
