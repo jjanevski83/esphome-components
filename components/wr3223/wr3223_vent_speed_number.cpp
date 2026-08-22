@@ -67,9 +67,8 @@ namespace esphome
             
             // Floats mit einer Nachkommastelle für Temperaturen konvertieren
             if (level_ == 10 || level_ == 20) {
-                char buf[16]; // Korrekte Puffergröße reserviert
-                snprintf(buf, sizeof(buf), "%.1f", value);
-                data = buf;
+                int temp_multiplied = static_cast<int>(value * 10.0f); // 24.5 wird zu 245
+                data = std::to_string(temp_multiplied);
             } else {
                 // Originaler Code für Lüfterstufen (Ganzzahlen)
                 int val = static_cast<int>(value);
