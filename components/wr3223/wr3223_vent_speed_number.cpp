@@ -58,17 +58,16 @@ namespace esphome
         }
 
         void WR3223VentSpeedNumber::control(float value)
-        {
+       {
             const char *cmd = get_command();
             if (cmd == nullptr || parent_ == nullptr || parent_->connector_ == nullptr)
                 return;
 
             std::string data;
             
-            // DEINE ANPASSUNG: Floats mit einer Nachkommastelle für Temperaturen konvertieren
+            // Floats mit einer Nachkommastelle für Temperaturen konvertieren
             if (level_ == 10 || level_ == 20) {
-                // Konvertiert z.B. 21.5 zu "21.5" für das serielle Protokoll
-                char buf[16];
+                char buf[16]; // Korrekte Puffergröße reserviert
                 snprintf(buf, sizeof(buf), "%.1f", value);
                 data = buf;
             } else {
@@ -77,11 +76,10 @@ namespace esphome
                 data = std::to_string(val);
             }
 
-            //int val = static_cast<int>(value);
-            //std::string data = std::to_string(val);
-            parent_->connector_->send_write_request(cmd, data, [this, val](char *, bool ok)
+            // [this, value] stellt sicher, dass die Variable 'value' in der Lambda-Funktion verfügbar ist
+            parent_->connector_->send_write_request(cmd, data, [this, value](char *, bool ok)
                                                     {
-            ESP_LOGD(TAG, "Write %d result %d", val, ok);
+            ESP_LOGD(TAG, "Write result %d for state %.1f", ok, value);
             if (ok)
                 this->publish_state(value); });
         }
