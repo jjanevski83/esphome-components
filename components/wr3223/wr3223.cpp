@@ -62,5 +62,34 @@ namespace esphome
             return true; // haben wir keinen Zugriff auf die RelaisComponent, so gilt der Schreibschutz
         }
 
+        void WR3223Component::parse_line(const std::string &line) {
+          // Sucht nach der Antwort von der Anlage, z.B. "Rd: 21.5" oder "Rd 21"
+          if (line.rfind("Rd", 0) == 0) {
+            size_t colon_pos = line.find_first_of(": ");
+            if (colon_pos != std::string::npos) {
+              std::string val_str = line.substr(colon_pos + 1);
+              float current_soll = std::stof(val_str);
+      
+              // Übergibt den gelesenen Wert an Home Assistant ohne Trigger-Schleife
+              if (this->raumsollwert_number_ != nullptr && this->raumsollwert_number_->state != current_soll) {
+                this->raumsollwert_number_->publish_state(current_soll);
+              }
+            }
+            return;
+          }
+
+
+          void WR3223Component::write_raumsollwert(float value) {
+            // Wandelt den Float (z.B. 21.5) in einen String um (WR3223 erwartet oft Ganzzahlen, sonst ".0" abschneiden)
+            int int_val = (int)value; 
+  
+            std::string cmd = "Rd " + std::to_string(int_val) + "\r\n"; // \r\n terminiert serielle Befehle
+  
+            // Befehl über den UART-Bus an die Hauptplatine senden
+            this->write_str(cmd.c_str());
+            ESP_LOGD("wr3223", "Gesendeter Raumsollwert an Anlage: %s", cmd.c_str());
+          }
+
+
     } // namespace wr3223
 } // namespace esphome

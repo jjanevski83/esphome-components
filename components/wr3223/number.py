@@ -11,7 +11,25 @@ from esphome.const import (
     ENTITY_CATEGORY_CONFIG,
 )
 
+
 from . import WR3223, wr3223_ns, CONF_WR3223_ID, CONF_DEACTIVATE
+from . import WR3223Component
+
+# Verknüpfung zur C++ Klasse
+WR3223Number = wr3223_ns.class_("WR3223Number", number.Number)
+
+CONFIG_SCHEMA = number.NUMBER_SCHEMA.extend({
+    cv.GenerateID(): cv.declare_id(WR3223Number),
+    cv.GenerateID('wr3223_id'): cv.use_id(WR3223Component),
+})
+
+def to_code(config):
+    parent = yield cg.get_variable(config['wr3223_id'])
+    var = cg.new_Pvariable(config[id])
+    yield number.register_number(var, config, min_value=15, max_value=30, step=1)
+    cg.add(parent.set_raumsollwert_number(var))
+
+
 
 WR3223VentSpeedNumber = wr3223_ns.class_(
     "WR3223VentSpeedNumber", number.Number, cg.Component

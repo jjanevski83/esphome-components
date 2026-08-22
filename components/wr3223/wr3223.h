@@ -10,6 +10,23 @@ namespace esphome
     namespace wr3223
     {
 
+        class WR3223Component : public Component, public uart::UARTDevice {
+          public:
+            void setup() override;
+            void loop() override;
+            void update();
+
+            // Setter für die ESPHome Number-Komponente
+            void set_raumsollwert_number(number::Number *num) { this->raumsollwert_number_ = num; }
+  
+            // Methode, die aufgerufen wird, wenn der Schieberegler in HA bewegt wird
+            void write_raumsollwert(float value);
+
+           protected:
+            void parse_line(const std::string &line);
+            number::Number *raumsollwert_number_{nullptr};
+        };
+        
         class WR3223RelaisComponent; // forward declaration
 
         class WR3223StartUpListener
