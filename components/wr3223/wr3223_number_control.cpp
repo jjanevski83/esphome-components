@@ -24,6 +24,9 @@ namespace esphome
             case 3:
                 command_ = WR3223Commands::L3;
                 break;
+            //case 4:
+            //    command_ = WR3223Commands::Rd;
+            //    break;
             default:
                 command_ = nullptr;
                 break;
