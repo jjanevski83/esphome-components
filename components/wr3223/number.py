@@ -113,7 +113,7 @@ async def to_code(config):
 
     sp_conf = numbers_conf.get(CONF_SUPPLY_TEMP_SETPOINT)
     if sp_conf is not None and not sp_conf.get(CONF_DEACTIVATE):
-        var = cg.new_Pvariable(sp_conf[CONF_ID], parent, "Rd", True)
+        var = cg.new_Pvariable(sp_conf[CONF_ID], parent, "Rd")#, True)
         await cg.register_component(var, sp_conf)
         await number.register_number(
             var,
