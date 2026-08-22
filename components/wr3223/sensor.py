@@ -39,6 +39,8 @@ SENSOR_COMMANDS = {
     # Drehzahl-Sensoren
     "NA": ("Drehzahl Abluft", "rpm", DEVICE_CLASS_FREQUENCY),
     "NZ": ("Drehzahl Zuluft", "rpm", DEVICE_CLASS_FREQUENCY),
+
+    "T4": ("Raumtemperatur", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
 }
 
 CONF_COMMAND = "command"
