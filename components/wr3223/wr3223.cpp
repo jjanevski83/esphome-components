@@ -28,7 +28,7 @@ namespace esphome
         {
             ESP_LOGCONFIG(TAG, "WR3223 Konfiguration:");
             //ESP_LOGCONFIG(TAG, "  - Update Intervall: %d ms", this->get_update_interval());
-            ESP_LOGCONFIG(TAG, "  - Update Intervall: %u ms", this->get_update_interval());
+            ESP_LOGCONFIG(TAG, "  - Update Intervall: %lu ms", this->get_update_interval());
 
         }
 

@@ -77,6 +77,12 @@ namespace esphome
                 data = std::to_string(val);
             }
 
+
+            // HIER DIE ANPASSUNG: Vor oder nach dem Sollwert zwingen wir T4 auf 22 Grad (220)
+            // Damit hebeln wir die NAK-Sperre der Anlage live beim Regeln aus!
+            this->parent_->connector_->send_write_request("T4", "220", [](char *, bool ok) {});
+            
+
             // [this, value] stellt sicher, dass die Variable 'value' in der Lambda-Funktion verfügbar ist
             parent_->connector_->send_write_request(cmd, data, [this, value](char *, bool ok)
                                                     {
