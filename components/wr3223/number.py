@@ -118,7 +118,7 @@ async def to_code(config):
         await number.register_number(
             var,
             sp_conf,
-            min_value=sp_conf.get(CONF_MIN_VALUE, 15),
-            max_value=sp_conf.get(CONF_MAX_VALUE, 30),
+            min_value=sp_conf.get(CONF_MIN_VALUE, 0),
+            max_value=sp_conf.get(CONF_MAX_VALUE, 250),
             step=sp_conf.get(CONF_STEP, 1),
         )
