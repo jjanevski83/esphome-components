@@ -54,7 +54,7 @@ RELAIS_SENSOR_SCHEMA = cv.Schema(
             CONF_DEACTIVATE, default=False
         ): cv.boolean,  # Option zum Deaktivieren
     }
-).extend(binary_sensor.BINARY_SENSOR_SCHEMA())
+).extend(binary_sensor.binary_sensor_schema())
 
 # Hauptschema für die Komponente
 CONFIG_SCHEMA = (
