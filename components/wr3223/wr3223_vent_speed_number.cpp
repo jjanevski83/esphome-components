@@ -83,7 +83,7 @@ namespace esphome
                                                     {
             ESP_LOGD(TAG, "Write %d result %d", val, ok);
             if (ok)
-                this->publish_state(val); });
+                this->publish_state(value); });
         }
 
     } // namespace wr3223
