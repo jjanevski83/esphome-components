@@ -11,8 +11,7 @@ namespace esphome
         void WR3223::setup()
         {
             ESP_LOGI(TAG, "WR3223 Hauptkomponente Setup gestartet!");
-            this->target_temperature_ = 21.5;     // Entspricht Rd (Raumsollwert)
-            this->supply_air_temperature_ = 20.0; // Entspricht SP (Zuluftsoll)
+            
         }
 
         void WR3223::update()
@@ -21,15 +20,16 @@ namespace esphome
             {
                 ESP_LOGI(TAG, "WR3223 Hauptkomponente FreshStart im Update wird ausgeführt!");
                 relais_component_->update();
-                this->target_temperature_ = 21.5;     // Rd fixieren
-                this->supply_air_temperature_ = 20.0; // SP fixieren                
+                                             
             }
         }
 
         void WR3223::dump_config()
         {
             ESP_LOGCONFIG(TAG, "WR3223 Konfiguration:");
-            ESP_LOGCONFIG(TAG, "  - Update Intervall: %d ms", this->get_update_interval());
+            //ESP_LOGCONFIG(TAG, "  - Update Intervall: %d ms", this->get_update_interval());
+            ESP_LOGCONFIG(TAG, "  - Update Intervall: %u ms", this->get_update_interval());
+
         }
 
         void WR3223::on_relais_update()
