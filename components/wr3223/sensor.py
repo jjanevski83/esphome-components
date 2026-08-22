@@ -34,6 +34,9 @@ SENSOR_COMMANDS = {
     "NA": ("Drehzahl Abluft", "rpm", DEVICE_CLASS_FREQUENCY),
     "NZ": ("Drehzahl Zuluft", "rpm", DEVICE_CLASS_FREQUENCY),
     "T4": ("Raumtemperatur", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
+    "SP": ("Zuluftsoll Temperatur", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
+    "Re": ("Zulufttemperatur Sollwert", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
+    "Rd": ("Raumsollwert", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
 }
 
 CONF_COMMAND = "command"
