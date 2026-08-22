@@ -64,7 +64,7 @@ CONFIG_SCHEMA = cv.Schema(
         cv.Optional(k, default={}): cv.Schema({        
             cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),                                                                             
             cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean  # Sensor deaktivieren            
-        }).extend(sensor.SENSOR_SCHEMA).extend(cv.polling_component_schema("60s"))
+        }).extend(sensor.sensor_schema()).extend(cv.polling_component_schema("60s"))
         for k in SENSOR_COMMANDS.keys()
     }),
 
