@@ -27,7 +27,7 @@ WR3223RelaisComponent = wr3223_ns.class_("WR3223RelaisComponent", cg.PollingComp
 
 
 # Automatisches Laden der Module
-AUTO_LOAD = ["uart", "text_sensor", "binary_sensor", "switch", "select", "number", "button"]
+AUTO_LOAD = ["uart", "sensor", "text_sensor", "binary_sensor", "switch", "select", "number", "button"]
 
 CONF_WR3223_ID = "wr3223_id"
 CONF_WR3223_CONNECTOR_ID = "wr3223_connector_id"
