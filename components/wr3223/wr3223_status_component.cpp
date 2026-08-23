@@ -60,7 +60,19 @@ namespace esphome
                 return;
             }
 
-            std::string data = std::to_string(holder_->getSwStatus());
+            //std::string data = std::to_string(holder_->getSwStatus());
+
+            // 1. ANPASSUNG: Wir holen den berechneten Status (z.B. für Lüfterstufe 1, 2, 3)
+            int status = holder_->getSwStatus();
+
+            // 2. ERWEITERUNG: Wir zwingen die Bits für den Remote-/PC-Modus aktiv.
+            // Aus der 47 (Lüfterstufe 1) wird so im Handumdrehen eine 63.
+            status |= 0x10; // Erzwinge Bit 4
+            status |= 0x20; // Erzwinge Bit 5
+
+            // Der erzwungene Status wird in den Sende-String konvertiert
+            std::string data = std::to_string(status);
+
             parent_->connector_->send_write_request(
                 WR3223Commands::SW, data,
                 [this](char *answer, bool success)
