@@ -16,6 +16,7 @@ from . import WR3223, wr3223_ns, CONF_WR3223_ID, CONF_DEACTIVATE
 
 WR3223VentSpeedNumber = wr3223_ns.class_(
     "WR3223VentSpeedNumber", number.Number, cg.Component
+    
 )
 
 #WR3223TempSollNumber = wr3223_ns.class_(
