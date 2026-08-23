@@ -65,7 +65,7 @@ namespace esphome
             if (cmd == nullptr || parent_ == nullptr || parent_->connector_ == nullptr)
                 return;
 
-            if (this->level_ == 30) return "T4";
+            //if (this->level_ == 30) return "T4";
 
             std::string data;
             
