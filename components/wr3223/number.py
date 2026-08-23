@@ -150,4 +150,4 @@ async def to_code(config):
     # Erzeugt deine neuen Temperaturregler automatisch im Code (Level 10 und 20)
     await build(CONF_RD_SOLLWERT, 10)
     await build(CONF_SP_SOLLWERT, 20)
-    await build_temp(CONF_THERMOSTAT_T4_INPUT, 30)
+    await build_temp("thermostat_t4_input", 30)
