@@ -24,11 +24,11 @@ namespace esphome
       // 1. ANPASSUNG: Die Maske von 0b00111111 auf 0b01111111 (oder 0b11111111) anheben,
         // damit die oberen Kontrollbits nicht mehr weggeschnitten werden!
       //STATUS_MASK_SW = 0b00111111
-      STATUS_MASK_SW = 0b01111111
+      STATUS_MASK_SW = 0b01111111,
 
       // 2. ERWEITERUNG: Wir definieren das Bit für den Temperatur-Schreibmodus (PC-Modus / Bit 5 oder 6)
       // Je nach Firmware entspricht das dem Wert 16 oder 32 (hier Bit 5 aktiv setzen)
-      REMOTE_TEMP_ON = 0b00010000, 
+      REMOTE_TEMP_ON = 0b00010000 
 
 
     };
@@ -150,7 +150,7 @@ namespace esphome
         // ANPASSUNG: Berechne den Wert mit der neuen Maske UND erzwinge das Remote-Bit (z.B. +16 oder +32)
         // Dadurch wird aus der 47 im Hintergrund automatisch eine 63!
         stateValueSW = (value & WR3223EnumStatusSW::STATUS_MASK_SW) | WR3223EnumStatusSW::REMOTE_TEMP_ON;
-        
+
         ESP_LOGD("VALUEHOLDER", "setSWStaus (masked): %d", stateValueSW);
         return true;
       }
