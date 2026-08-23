@@ -65,12 +65,19 @@ namespace esphome
             if (cmd == nullptr || parent_ == nullptr || parent_->connector_ == nullptr)
                 return;
 
+            if (this->level_ == 30) return "T4";
+
             std::string data;
             
             // Floats mit einer Nachkommastelle für Temperaturen konvertieren
             if (level_ == 10 || level_ == 20) {
                 int temp_multiplied = static_cast<int>(value * 10.0f); // 24.5 wird zu 245
                 data = std::to_string(temp_multiplied);
+            } else if (level_ == 30) {
+                // Nimmt den Wert aus Home Assistant entgegen und speichert ihn für den zyklischen T4-Schreibbefehl
+                this->parent_->external_room_temp_t4_ = value; 
+                this->publish_state(value);
+                
             } else {
                 // Originaler Code für Lüfterstufen (Ganzzahlen)
                 int val = static_cast<int>(value);
@@ -81,7 +88,7 @@ namespace esphome
             // HIER DIE ANPASSUNG: Vor oder nach dem Sollwert zwingen wir T4 auf 22 Grad (220)
             // Damit hebeln wir die NAK-Sperre der Anlage live beim Regeln aus!
             this->parent_->connector_->send_write_request("T4", "220", [](char *, bool ok) {});
-            
+
 
             // [this, value] stellt sicher, dass die Variable 'value' in der Lambda-Funktion verfügbar ist
             parent_->connector_->send_write_request(cmd, data, [this, value](char *, bool ok)

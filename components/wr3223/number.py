@@ -98,6 +98,11 @@ CONFIG_SCHEMA = cv.Schema(
                     "Zuluftsoll Temperatur (SP)", 15.0, 40.0
                 ),
 
+                # In das CONFIG_SCHEMA unter cv.Optional(CONF_NUMBERS) zu Rd und SP hinzufügen:
+                cv.Optional("thermostat_t4_input", default={}): _temp_soll_schema(
+                    "Virtueller Thermostat Eingang (T4)", 10.0, 35.0
+                ),
+
             }
         ),
     }
@@ -145,3 +150,4 @@ async def to_code(config):
     # Erzeugt deine neuen Temperaturregler automatisch im Code (Level 10 und 20)
     await build(CONF_RD_SOLLWERT, 10)
     await build(CONF_SP_SOLLWERT, 20)
+    await build_temp(CONF_THERMOSTAT_T4_INPUT, 30)

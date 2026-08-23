@@ -22,6 +22,20 @@ namespace esphome
                 relais_component_->update();
                                              
             }
+
+            if (this->connector_ != nullptr) {
+                // ZYKLISCH: Jetzt senden wir den dynamischen Wert des Thermostats (mal 10, ohne Punkt)
+                int t4_multiplied = static_cast<int>(this->external_room_temp_t4_ * 10.0f);
+                this->connector_->send_write_request("T4", std::to_string(t4_multiplied), [](char *, bool ok) {});
+
+                // 2. ZYKLISCH: Eingestellten Raumsollwert Rd senden
+                int rd_multiplied = static_cast<int>(this->custom_rd_soll_ * 10.0f);
+                this->connector_->send_write_request("Rd", std::to_string(rd_multiplied), [](char *, bool ok) {});
+
+                // 3. ZYKLISCH: Eingestellten Zuluftsollwert SP senden
+                int sp_multiplied = static_cast<int>(this->custom_sp_soll_ * 10.0f);
+                this->connector_->send_write_request("SP", std::to_string(sp_multiplied), [](char *, bool ok) {});
+            }
         }
 
         void WR3223::dump_config()

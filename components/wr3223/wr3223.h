@@ -16,6 +16,9 @@ namespace esphome
         {
         public:
             virtual void on_startup() = 0;
+            //float custom_rd_soll_ = 21.5; // Standard-Startwert falls kein Regler bewegt wurde
+            //float custom_sp_soll_ = 20.0; // Standard-Startwert falls kein Regler bewegt wurde
+            //float external_room_temp_t4_ = 22.0;
         };
 
         class WR3223 : public PollingComponent
@@ -53,7 +56,15 @@ namespace esphome
             uint8_t startup_counter_{0};
             uint8_t max_restore_attempts_{4};
             std::vector<WR3223StartUpListener *> startup_listeners_{};
+
+        public: // Macht die Variablen global für das ESPHome-Lambda sichtbar!
+            float custom_rd_soll_{21.5};
+            float custom_sp_soll_{20.0};
+            float external_room_temp_t4_{22.0};
+
         };
+
+          
 
     } // namespace wr3223
 } // namespace esphome
