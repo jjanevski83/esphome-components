@@ -24,6 +24,10 @@ namespace esphome
             }
 
             if (this->connector_ != nullptr) {
+
+                // 1. MODUS FREISCHALTEN: Wir senden SW=63 statt 47, um die Temperatur-Schreibrechte zu entriegeln
+                //this->connector_->send_write_request("SW", "63", [](char *, bool ok) {});
+
                 // ZYKLISCH: Jetzt senden wir den dynamischen Wert des Thermostats (mal 10, ohne Punkt)
                 int t4_multiplied = static_cast<int>(this->external_room_temp_t4_ * 10.0f);
                 this->connector_->send_write_request("T4", std::to_string(t4_multiplied), [](char *, bool ok) {});
@@ -35,6 +39,10 @@ namespace esphome
                 // 3. ZYKLISCH: Eingestellten Zuluftsollwert SP senden
                 int sp_multiplied = static_cast<int>(this->custom_sp_soll_ * 10.0f);
                 this->connector_->send_write_request("SP", std::to_string(sp_multiplied), [](char *, bool ok) {});
+
+                // 1. MODUS zurück 47, um die Temperatur-Schreibrechte zu entriegeln
+                //this->connector_->send_write_request("SW", "63", [](char *, bool ok) {});
+
             }
         }
 
