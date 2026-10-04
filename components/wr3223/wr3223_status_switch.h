@@ -65,5 +65,23 @@ namespace esphome
             }
         };
 
+         class WR3223WpFreiSwitch : public switch_::Switch, public Component
+        {
+        public:
+            void set_status_component(WR3223StatusComponent *status) { status_ = status; }
+            
+            void write_state(bool state) override {
+                if (status_ != nullptr) {
+                    // Nutzt das im Connector vorhandene Sende-Framework für ASCII-Befehle
+                    auto *connector = status_->get_connector(); 
+                    if (connector != nullptr) {
+                        std::string value_str = state ? "1" : "0";
+                        connector->send_command(WR3223Commands::WF, value_str);
+                    }
+                }
+                this->publish_state(state);
+            }
+        };
+
     } // namespace wr3223
 } // namespace esphome

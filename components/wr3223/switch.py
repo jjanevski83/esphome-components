@@ -17,10 +17,14 @@ WR3223AdditionalHeatingSwitch = wr3223_ns.class_(
 )
 WR3223CoolingSwitch = wr3223_ns.class_("WR3223CoolingSwitch", WR3223StatusSwitch)
 
+# NEU: Registrierung der neuen C++ Klasse in Python
+WR3223WpFreiSwitch = wr3223_ns.class_("WR3223WpFreiSwitch", switch.Switch, cg.Component)
+
 CONF_SWITCHES = "switches"
 CONF_HEAT_PUMP = "heat_pump"
 CONF_ADDITIONAL_HEATING = "additional_heating"
 CONF_COOLING = "cooling"
+CONF_WP_FREI = "wp_frei" # NEU: YAML-Key für WPumpeFREI
 
 
 def _switch_schema(class_, default_name: str, default_icon: str):
@@ -54,6 +58,12 @@ CONFIG_SCHEMA = cv.Schema(
                     "Kühlung",
                     "mdi:snowflake",
                 ),
+                # NEU: Schema-Eintrag für WPumpeFREI Schalter
+                cv.Optional(CONF_WP_FREI, default={}): _switch_schema(
+                    WR3223WpFreiSwitch,
+                    "Wärmepumpe Freigabe (WF)",
+                    "mdi:lock-open-outline",
+                ),
             }
         ),
     }
@@ -75,3 +85,4 @@ async def to_code(config):
     await build(CONF_HEAT_PUMP, WR3223HeatPumpSwitch)
     await build(CONF_ADDITIONAL_HEATING, WR3223AdditionalHeatingSwitch)
     await build(CONF_COOLING, WR3223CoolingSwitch)
+    await build(CONF_WP_FREI, WR3223WpFreiSwitch) # NEU: Schalter beim Kompilieren bauen

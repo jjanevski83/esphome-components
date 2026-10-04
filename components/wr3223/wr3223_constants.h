@@ -168,8 +168,11 @@ public:
   // Zusatzheizung Ein lesen/schreiben
   static constexpr const char *ZE = "ZE";
 
-  // Wärmepumpe frei (freigegeben (1) oder aus (0)) lesen/schreiben
+  // Kompressor AN (AN (1) oder aus (0)) lesen/schreiben
   static constexpr const char *WP = "WP";
+
+  static constexpr const char *WF = "WF"; // Wärmepumpen-Freigabe (Read/Write)
+  static constexpr const char *CO = "CO"; // Kompressor-Status (Read-Only)
 
   // Pausezeit für Druckabbau bei automatischer Umschaltung lesen/schreiben
   static constexpr const char *PA = "PA";
