@@ -19,6 +19,7 @@ namespace esphome
       ADDITIONAL_HEATING_OFF = 0b00001000,
       VENT_LEVEL_0 = 0b00010000,
       COOLING_OFF = 0b00100000,
+      WPUMPE_FREI_OFF = 0b01000000, // NEU: Bit 6 blockiert die Wärmepumpe (aktiv bei 0)
 
       STATUS_MASK_SW = 0b00111111
     };
@@ -122,6 +123,20 @@ namespace esphome
       bool getHeatPumpOnStatus() const
       {
         return !(stateValueSW & WR3223EnumStatusSW::HEAT_PUMP_OFF);
+      }
+
+      // Innerhalb der Klasse WR3223StatusValueHolder fügst du diese Methoden hinzu:
+      void setWPumpeFrei(bool frei)
+      {
+        if (frei)
+          stateValueSW &= ~WR3223EnumStatusSW::WPUMPE_FREI_OFF; // Bit löschen = Freigegeben
+        else
+          stateValueSW |= WR3223EnumStatusSW::WPUMPE_FREI_OFF;  // Bit setzen = Gesperrt
+      }
+
+      bool getWPumpeFreiStatus() const
+      {
+        return !(stateValueSW & WR3223EnumStatusSW::WPUMPE_FREI_OFF);
       }
 
       void restore_state_sw() { pref_.load(&stateValueSW); }

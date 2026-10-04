@@ -65,5 +65,19 @@ namespace esphome
             }
         };
 
+        // Füge diese Klasse am Ende der Datei (vor namespace-Schluss) hinzu:
+        class WR3223WPumpeFreiSwitch : public WR3223StatusSwitch
+        {
+        protected:
+            void apply_state(WR3223StatusValueHolder *holder, bool state) override
+            {
+                holder->setWPumpeFrei(state);
+            }
+            bool current_state(WR3223StatusValueHolder *holder) override
+            {
+                return holder->getWPumpeFreiStatus();
+            }
+        };
+
     } // namespace wr3223
 } // namespace esphome
