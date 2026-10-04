@@ -3,6 +3,7 @@
 #include "esphome/components/switch/switch.h"
 #include "esphome/core/component.h"
 #include "wr3223_status_component.h"
+#include "wr3223_constants.h" // NEU: Damit WR3223Commands und WF bekannt sind
 
 namespace esphome
 {
@@ -65,14 +66,14 @@ namespace esphome
             }
         };
 
-         class WR3223WpFreiSwitch : public switch_::Switch, public Component
+        class WR3223WpFreiSwitch : public switch_::Switch, public Component
         {
         public:
             void set_status_component(WR3223StatusComponent *status) { status_ = status; }
             
             void write_state(bool state) override {
                 if (status_ != nullptr) {
-                    // Nutzt das im Connector vorhandene Sende-Framework für ASCII-Befehle
+                    // Holt den seriellen Connector aus der Statuskomponente
                     auto *connector = status_->get_connector(); 
                     if (connector != nullptr) {
                         std::string value_str = state ? "1" : "0";
@@ -81,6 +82,9 @@ namespace esphome
                 }
                 this->publish_state(state);
             }
+
+        protected:
+            WR3223StatusComponent *status_{nullptr};
         };
 
     } // namespace wr3223
