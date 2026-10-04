@@ -35,6 +35,39 @@ namespace esphome
                 holder_->restore_state_sw();                
                 write_status();                
             }
+
+            // NEU: Einmaliges Auslesen des echten WF-Zustands nach dem Booten
+            if (parent_ != nullptr && parent_->connector_ != nullptr)
+            {
+                ESP_LOGI(TAG, "Lese initialen Zustand für Wärmepumpen-Freigabe (WF) aus...");
+                
+                parent_->connector_->send_request(
+                    WR3223Commands::WF,
+                    [this](char *resp, bool ok)
+                    {
+                        if (ok && resp != nullptr)
+                        {
+                            std::string response_str(resp);
+                            bool actual_state = (response_str == "1");
+                            ESP_LOGI(TAG, "Initialer WF-Zustand erfolgreich ausgelesen: %s", response_str.c_str());
+                            
+                            // Aktualisiere alle registrierten Schalter mit dem echten Wert
+                            for (auto *ctrl : this->controls_)
+                            {
+                                // Wir rufen ein erweitertes Signal auf
+                                ctrl->on_status(this->holder_);
+                            }
+                            
+                            // Trick: Um den Schalter direkt zu erreichen, publishen wir den Zustand
+                            // an die UI (wird in Schritt 2 in wr3223_status_switch.h verarbeitet)
+                            this->notify_controls();
+                        }
+                        else
+                        {
+                            ESP_LOGW(TAG, "Initiales Auslesen von WF fehlgeschlagen.");
+                        }
+                    });
+            }
         }
 
         void WR3223StatusComponent::write_status()
@@ -101,20 +134,36 @@ namespace esphome
             if (parent_ == nullptr || parent_->connector_ == nullptr)
                 return;
 
-            if (parent_->is_bedienteil_aktiv())
-            {
-                ESP_LOGW(TAG, "Bedienteil aktiv - WF Schreiben nicht moeglich.");
-                return;
-            }
-
-            std::string data = state ? "1" : "0";
-            ESP_LOGD(TAG, "Sende WF Befehl: %s", data.c_str());
-
+            ESP_LOGI(TAG, "Hebe Schreibschutz auf (Sende RESETcode = 1)...");
+            
+            // 1. Schreibschutz aufheben (Re = 1)
             parent_->connector_->send_write_request(
-                WR3223Commands::WF, data,
-                [](char *answer, bool success)
-                {
-                    ESP_LOGD("wr3223_status_component", "WF Befehl Antwort: %s success=%d", answer, success);
+                WR3223Commands::Re, "1",
+                [this, state](char *re_answer, bool re_success) {
+                    if (!re_success) {
+                        ESP_LOGW("wr3223_status_component", "Konnte RESETcode nicht auf 1 setzen. Versuche WF trotzdem...");
+                    } else {
+                        ESP_LOGD("wr3223_status_component", "Konfigurationsmodus aktiv (RESETcode=1).");
+                    }
+
+                    // 2. Eigentlichen WF-Befehl senden
+                    std::string data = state ? "1" : "0";
+                    ESP_LOGD("wr3223_status_component", "Sende WF Befehl: %s", data.c_str());
+
+                    this->parent_->connector_->send_write_request(
+                        WR3223Commands::WF, data,
+                        [this, state](char *wf_answer, bool wf_success) {
+                            if (!wf_success) {
+                                ESP_LOGE("wr3223_status_component", "Schreibzugriff auf WF trotz RESETcode verweigert (NAK)!");
+                                
+                                // Zustand in Home Assistant korrigieren (Zurückspringen auf Ist-Wert)
+                                for (auto *ctrl : this->controls_) {
+                                    this->write_status(); 
+                                }
+                            } else {
+                                ESP_LOGI("wr3223_status_component", "WF erfolgreich von Wärmepumpe übernommen!");
+                            }
+                        });
                 });
         }
 

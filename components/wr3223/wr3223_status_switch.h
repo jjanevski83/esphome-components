@@ -66,17 +66,27 @@ namespace esphome
             }
         };
 
-        class WR3223WpFreiSwitch : public switch_::Switch, public Component
+        class WR3223WpFreiSwitch : public switch_::Switch, public Component, public WR3223StatusControl
         {
         public:
-            void set_status_component(WR3223StatusComponent *status) { status_ = status; }
+            void set_status_component(WR3223StatusComponent *status) { 
+                status_ = status; 
+                if (status_ != nullptr) {
+                    status_->register_status_control(this);
+                }
+            }
             
             void write_state(bool state) override {
                 if (status_ != nullptr) {
-                    // Ruft die neue Methode in der Statuskomponente auf, die den Connector besitzt
                     status_->write_wp_frei(state);
                 }
                 this->publish_state(state);
+            }
+
+            // Falls die Komponente den Status aktualisiert, spiegeln wir ihn hier
+            void on_status(WR3223StatusValueHolder *holder) override {
+                // Hinweis: Da WF nicht im SW-Byte liegt, dient dies primär dem 
+                // Zurücksetzen der UI bei Fehlern via write_status()
             }
 
         protected:
