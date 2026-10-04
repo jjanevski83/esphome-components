@@ -37,6 +37,9 @@ namespace esphome
             /// @brief Write the current holder status to the device
             void write_status();
 
+            /// @brief Sende den expliziten ASCII-Befehl für die Wärmepumpen-Freigabe (WF)
+            void write_wp_frei(bool state);
+
         protected:
             void notify_controls();
 

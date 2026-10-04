@@ -96,5 +96,27 @@ namespace esphome
             }
         }
 
+        void WR3223StatusComponent::write_wp_frei(bool state)
+        {
+            if (parent_ == nullptr || parent_->connector_ == nullptr)
+                return;
+
+            if (parent_->is_bedienteil_aktiv())
+            {
+                ESP_LOGW(TAG, "Bedienteil aktiv - WF Schreiben nicht moeglich.");
+                return;
+            }
+
+            std::string data = state ? "1" : "0";
+            ESP_LOGD(TAG, "Sende WF Befehl: %s", data.c_str());
+
+            parent_->connector_->send_write_request(
+                WR3223Commands::WF, data,
+                [](char *answer, bool success)
+                {
+                    ESP_LOGD("wr3223_status_component", "WF Befehl Antwort: %s success=%d", answer, success);
+                });
+        }
+
     } // namespace wr3223
 } // namespace esphome

@@ -73,12 +73,8 @@ namespace esphome
             
             void write_state(bool state) override {
                 if (status_ != nullptr) {
-                    // Holt den seriellen Connector aus der Statuskomponente
-                    auto *connector = status_->get_connector(); 
-                    if (connector != nullptr) {
-                        std::string value_str = state ? "1" : "0";
-                        connector->send_command(WR3223Commands::WF, value_str);
-                    }
+                    // Ruft die neue Methode in der Statuskomponente auf, die den Connector besitzt
+                    status_->write_wp_frei(state);
                 }
                 this->publish_state(state);
             }
