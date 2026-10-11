@@ -82,6 +82,7 @@ namespace esphome
                     
                     ESP_LOGD("wr3223", "Statusabfrage PA06 an Connector-Queue übergeben.");
                 }
+            }
 
             WR3223Connector *connector_{nullptr};
             WR3223RelaisComponent *relais_component_{nullptr};
