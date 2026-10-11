@@ -90,13 +90,13 @@ namespace esphome
                                            public Component
         {
         public:
-            void set_wr3223_parent(WR3223 *parent) { parent_ = parent; }
+            void set_wr3223_parent(WR3223 *parent) { this->parent_ = parent; }
 
             void setup() override {
-                // Suche in der App nach dem automatisch erstellten PA06 Sensor
-                for (auto *sens : App.get_sensors()) {
-                    // Der Sensor-Name oder die ID wird vom Python-Framework vergeben
-                    // Wir lauschen auf jede Zustandsänderung des PA06-Status-Sensors
+                // Zugriff auf das globale App-Objekt über den globalen Namespace ::esphome::global_preferences 
+                // bzw. über die Registrierung der Callbacks. Damit es absolut sicher kompiliert, 
+                // nutzen wir den vollen Namespace-Pfad für das globale App-Objekt:
+                for (auto *sens : ::esphome::App.get_sensors()) {
                     if (sens->get_name() == "Wärmepumpe EEPROM Status") {
                         sens->add_on_state_callback([this](float value) {
                             // Wenn der Sensor 1.0 liefert, ist die WP frei (true)
@@ -108,11 +108,15 @@ namespace esphome
             }
 
             void write_state(bool state) override {
-                if (parent_ != nullptr) {
-                    parent_->write_wpumpe_frei(state);
+                if (this->parent_ != nullptr) {
+                    this->parent_->write_wpumpe_frei(state);
                 }
                 this->publish_state(state);
             }
+
+        protected:
+            // HIER GEFEHLT: Deklaration der Parent-Variable
+            WR3223 *parent_{nullptr}; 
         };
 
     } // namespace wr3223
