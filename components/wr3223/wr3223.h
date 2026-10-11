@@ -48,9 +48,16 @@ namespace esphome
                     // Konstruiert "PA0601" (Freigabe) oder "PA0600" (Sperre)
                     std::string cmd = state ? "PA0601" : "PA0600";
                     
-                    // Sendet den Befehl eingerahmt in STX (0x02) und ETX (0x03)
-                    this->connector_->write_command(cmd); 
-                    ESP_LOGD("wr3223", "Parameter WPumpeFrei über UART gesendet: %s", cmd.c_str());
+                    // Sende das Start-Byte (STX = 0x02)
+                    this->connector_->write_byte(0x02);
+                    
+                    // Sende den ASCII-Befehlsstring zeichenweise
+                    this->connector_->write_str(cmd.c_str());
+                    
+                    // Sende das End-Byte (ETX = 0x03)
+                    this->connector_->write_byte(0x03);
+                    
+                    ESP_LOGD("wr3223", "Parameter WPumpeFrei via Connector gesendet: %s", cmd.c_str());
                 }
             }
 
