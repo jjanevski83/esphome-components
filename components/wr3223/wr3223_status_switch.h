@@ -65,7 +65,26 @@ namespace esphome
             }
         };
 
-        
+        class WR3223WPumpeFreiParamSwitch : public switch_::Switch, public Component
+        {
+        public:
+            void set_wr3223_parent(WR3223 *parent) { parent_ = parent; }
+
+            void setup() override {
+                // Initialer Zustand im Home Assistant (optimistisch/false als Standard)
+                this->publish_state(false); 
+            }
+
+            void write_state(bool state) override {
+                if (parent_ != nullptr) {
+                    parent_->write_wpumpe_frei(state);
+                }
+                this->publish_state(state);
+            }
+
+        protected:
+            WR3223 *parent_{nullptr};
+        };
 
     } // namespace wr3223
 } // namespace esphome

@@ -43,6 +43,17 @@ namespace esphome
             /// @return
             bool is_startup_completed() { return fresh_start_ == false; }
 
+            void write_wpumpe_frei(bool state) {
+                if (this->connector_ != nullptr) {
+                    // Konstruiert "PA0601" (Freigabe) oder "PA0600" (Sperre)
+                    std::string cmd = state ? "PA0601" : "PA0600";
+                    
+                    // Sendet den Befehl eingerahmt in STX (0x02) und ETX (0x03)
+                    this->connector_->write_command(cmd); 
+                    ESP_LOGD("wr3223", "Parameter WPumpeFrei über UART gesendet: %s", cmd.c_str());
+                }
+            }
+
             WR3223Connector *connector_{nullptr};
             WR3223RelaisComponent *relais_component_{nullptr};
 
