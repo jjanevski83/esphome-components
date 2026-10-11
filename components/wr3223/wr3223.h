@@ -61,28 +61,57 @@ namespace esphome
                 }
             }*/
 
+              // === Sende-Befehle für WPumpeFrei mit korrekter XOR-Prüfsumme ===
             void write_wpumpe_frei(bool state) {
                 if (this->connector_ != nullptr) {
-                    // Wir bauen den Befehl exakt als String auf
-                    // Format: "PA0601" (Freigabe) oder "PA0600" (Sperre)
-                    std::string cmd = state ? "PA0601" : "PA0600";
-                    
-                    // Nutze die Methode add_command, die laut Log bei der Fehlerabfrage (ER)
-                    // perfekt funktioniert hat (wr3223_connector:152)
-                    this->connector_->add_command(cmd);
-                    
-                    ESP_LOGD("wr3223", "Parameter %s an Connector-Queue übergeben.", cmd.c_str());
+                // 1. Telegramm-Kopf: EOT (0x04) + Gruppenadresse "0011"
+                this->connector_->write_byte(0x04);
+                this->connector_->write_str("0011");
+                
+                // 2. Nutzdaten-Kopf: STX (0x02)
+                this->connector_->write_byte(0x02);
+                
+                // 3. Befehl senden & passende Prüfsumme anhängen
+                if (state) {
+                    this->connector_->write_str("PA0601");
+                    this->connector_->write_byte(0x03); // ETX
+                    this->connector_->write_byte(0x32); // XOR-BCC für PA0601
+                } else {
+                    this->connector_->write_str("PA0600");
+                    this->connector_->write_byte(0x03); // ETX
+                    this->connector_->write_byte(0x33); // XOR-BCC für PA0600
+                }
+                
+                // 4. Telegramm-Ende: Abschließendes EOT (0x04)
+                this->connector_->write_byte(0x04);
+                
+                ESP_LOGD("wr3223", "Parameter WPumpeFrei via UART gesendet (State: %d).", state);
                 }
             }
 
             void request_wpumpe_frei_status() {
                 if (this->connector_ != nullptr) {
-                    // Leseabfrage für Parameterregister 06
-                    this->connector_->add_command("PA06");
-                    
-                    ESP_LOGD("wr3223", "Statusabfrage PA06 an Connector-Queue übergeben.");
+                // 1. Telegramm-Kopf: EOT (0x04) + Gruppenadresse "0011"
+                this->connector_->write_byte(0x04);
+                this->connector_->write_str("0011");
+                
+                // 2. Nutzdaten-Kopf: STX (0x02)
+                this->connector_->write_byte(0x02);
+                
+                // 3. Lese-Befehl für Register 06 senden
+                this->connector_->write_str("PA06");
+                this->connector_->write_byte(0x03); // ETX
+                
+                // XOR-BCC für PA06 ('P' ^ 'A' ^ '0' ^ '6') = 0x33
+                this->connector_->write_byte(0x33); 
+                
+                // 4. Telegramm-Ende: Abschließendes EOT (0x04)
+                this->connector_->write_byte(0x04);
+                
+                ESP_LOGD("wr3223", "Statusabfrage für PA06 gesendet.");
                 }
             }
+
 
             WR3223Connector *connector_{nullptr};
             WR3223RelaisComponent *relais_component_{nullptr};
