@@ -61,26 +61,61 @@ namespace esphome
                 }
             }*/
 
+            // === Sende-Befehle für WPumpeFrei via nativem UART mit Zeitverriegelung ===
             void write_wpumpe_frei(bool state) {
                 if (this->connector_ != nullptr) {
-                // "PA0601" (Freigabe) oder "PA0600" (Sperre)
-                std::string cmd = state ? "PA0601" : "PA0600";
+                // 1. Telegramm-Kopf: EOT (0x04) + Gruppenadresse "0011"
+                this->connector_->write_byte(0x04);
+                this->connector_->write_str("0011");
                 
-                // Wir übergeben den Befehl als String an die Queue des Connectors.
-                // Er verpackt das Paket vollautomatisch mit 04 30 30 31 31 02 ... 03 [BCC] 04
-                this->connector_->add_command(cmd);
+                // 2. Nutzdaten-Kopf: STX (0x02)
+                this->connector_->write_byte(0x02);
                 
-                ESP_LOGD("wr3223", "Parameter-Schreibbefehl %s zur Queue hinzugefügt.", cmd.c_str());
+                // 3. Befehl senden & passende, von uns vorberechnete BCC-Prüfsumme anhängen
+                if (state) {
+                    this->connector_->write_str("PA0601");
+                    this->connector_->write_byte(0x03); // ETX
+                    this->connector_->write_byte(0x32); // XOR-BCC für PA0601
+                } else {
+                    this->connector_->write_str("PA0600");
+                    this->connector_->write_byte(0x03); // ETX
+                    this->connector_->write_byte(0x33); // XOR-BCC für PA0600
+                }
+                
+                // 4. Telegramm-Ende: Abschließendes EOT (0x04)
+                this->connector_->write_byte(0x04);
+                
+                ESP_LOGD("wr3223", "Parameter WPumpeFrei via UART gesendet (State: %d).", state);
                 }
             }
 
             void request_wpumpe_frei_status() {
+                // Zeitverriegelung: Nur alle 30.000 ms (30 Sekunden) eine Anfrage zulassen,
+                // um die serielle Schnittstelle und die Anlage vor Überflutung (Spam) zu schützen
+                uint32_t now = millis();
+                static uint32_t last_request = 0;
+                if (now - last_request < 30000) {
+                return; 
+                }
+                last_request = now;
+
                 if (this->connector_ != nullptr) {
-                // Wir fügen die Statusabfrage für das Register 06 der Queue hinzu.
-                // WICHTIG: Nur HINZUFÜGEN, nicht direkt senden!
-                this->connector_->add_command("PA06");
+                // 1. Telegramm-Kopf: EOT (0x04) + Gruppenadresse "0011"
+                this->connector_->write_byte(0x04);
+                this->connector_->write_str("0011");
                 
-                ESP_LOGD("wr3223", "Parameter-Lesebefehl PA06 zur Queue hinzugefügt.");
+                // 2. Nutzdaten-Kopf: STX (0x02)
+                this->connector_->write_byte(0x02);
+                
+                // 3. Lese-Befehl für Register 06 senden (Muss im String immer 4 Zeichen haben)
+                this->connector_->write_str("PA06");
+                this->connector_->write_byte(0x03); // ETX
+                this->connector_->write_byte(0x33); // XOR-BCC für PA06 ('P' ^ 'A' ^ '0' ^ '6')
+                
+                // 4. Telegramm-Ende: Abschließendes EOT (0x04)
+                this->connector_->write_byte(0x04);
+                
+                ESP_LOGD("wr3223", "Statusabfrage für PA06 gesendet.");
                 }
             }
 
