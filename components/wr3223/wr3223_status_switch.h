@@ -92,11 +92,10 @@ namespace esphome
         public:
             void set_wr3223_parent(WR3223 *parent) { this->parent_ = parent; }
             
-            // Neuer Setter: Nimmt den Zeiger auf den generierten PA06-Sensor entgegen
-            void set_status_sensor(sensor::Sensor *sens) { this->status_sensor_ = sens; }
+            // Korrigiert: Nutzt den eindeutigen, globalen Namespace-Pfad für Sensoren
+            void set_status_sensor(::esphome::sensor::Sensor *sens) { this->status_sensor_ = sens; }
 
             void setup() override {
-                // Wenn der Sensor übergeben wurde, hängen wir uns direkt an seine Updates
                 if (this->status_sensor_ != nullptr) {
                     this->status_sensor_->add_on_state_callback([this](float value) {
                         // 1.0 oder höher bedeutet freigegeben (true)
@@ -114,7 +113,7 @@ namespace esphome
 
         protected:
             WR3223 *parent_{nullptr};
-            sensor::Sensor *status_sensor_{nullptr};
+            ::esphome::sensor::Sensor *status_sensor_{nullptr}; // Korrigiert
         };
 
     } // namespace wr3223
