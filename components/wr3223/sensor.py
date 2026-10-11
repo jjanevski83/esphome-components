@@ -35,7 +35,7 @@ SENSOR_COMMANDS = {
     "NZ": ("Drehzahl Zuluft", "rpm", DEVICE_CLASS_FREQUENCY),
     "T4": ("Raumtemperatur", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
     # NEU: Das Auslesen von PA06 als Sensor registrieren
-    "PA06": ("Wärmepumpe EEPROM Status", "", ""),
+    #"PA06": ("Wärmepumpe EEPROM Status", "", ""),
 }
 
 CONF_COMMAND = "command"

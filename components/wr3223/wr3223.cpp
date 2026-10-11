@@ -20,6 +20,11 @@ namespace esphome
                 ESP_LOGI(TAG, "WR3223 Hauptkomponente FreshStart im Update wird ausgeführt!");
                 relais_component_->update();                
             }
+
+             // NEU: Triggert die Abfrage für PA06 im exakten Takt deines Update-Intervalls (30s)
+            if (!fresh_start_) {
+                this->request_wpumpe_frei_status();
+            }
         }
 
         void WR3223::dump_config()

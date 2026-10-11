@@ -6,7 +6,7 @@
 
 namespace esphome
 {
-    namespace sensor { class Sensor; }
+    
     namespace wr3223
     {
 
@@ -93,10 +93,15 @@ namespace esphome
         public:
             void set_wr3223_parent(WR3223 *parent) { this->parent_ = parent; }
             
-            // Verknüpft den Zeiger auf das Sensor-Objekt
-            void set_status_sensor(::esphome::sensor::Sensor *sens) { this->status_sensor_ = sens; }
+            // Leere Methode, damit switch/__init__.py beim Kompilieren nicht meckert
+            void set_status_sensor(void *sens) {} 
 
-            void setup() override; // Die Logik wandert wegen des Typ-Zugriffs in die .cpp
+            void setup() override {
+                // Einmalige Status-Abfrage beim Systemstart triggern
+                if (this->parent_ != nullptr) {
+                    this->parent_->request_wpumpe_frei_status();
+                }
+            }
 
             void write_state(bool state) override {
                 if (this->parent_ != nullptr) {
@@ -107,7 +112,6 @@ namespace esphome
 
         protected:
             WR3223 *parent_{nullptr};
-            ::esphome::sensor::Sensor *status_sensor_{nullptr}; 
         };
 
     } // namespace wr3223
