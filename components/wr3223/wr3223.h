@@ -61,42 +61,48 @@ namespace esphome
                 }
             }*/
 
-            // Schreibt den Zustand aktiv an das EEPROM
-            void write_wpumpe_frei(bool state) {
-                if (this->connector_ != nullptr) {
-                this->connector_->write_byte(0x04); // EOT
-                this->connector_->write_str("0011");
-                this->connector_->write_byte(0x02); // STX
-                
-                if (state) {
-                    this->connector_->write_str("PA0601");
-                    this->connector_->write_byte(0x03); // ETX
-                    this->connector_->write_byte(0x32); // BCC
-                } else {
-                    this->connector_->write_str("PA0600");
-                    this->connector_->write_byte(0x03); // ETX
-                    this->connector_->write_byte(0x33); // BCC
+              // Schreibt den Zustand aktiv an das EEPROM
+                void write_wpumpe_frei(bool state) {
+                    if (this->connector_ != nullptr) {
+                    this->connector_->write_byte(0x04); // EOT (Reset)
+                    this->connector_->write_str("0011"); // Gruppenadresse
+                    this->connector_->write_byte(0x02); // STX
+                    
+                    if (state) {
+                        this->connector_->write_str("PA0601");
+                        this->connector_->write_byte(0x03); // ETX
+                        this->connector_->write_byte(0x32); // BCC-Prüfsumme für PA0601
+                    } else {
+                        this->connector_->write_str("PA0600");
+                        this->connector_->write_byte(0x03); // ETX
+                        this->connector_->write_byte(0x33); // BCC-Prüfsumme für PA0600
+                    }
+                    this->connector_->write_byte(0x04); // EOT
+                    }
                 }
-                this->connector_->write_byte(0x04); // EOT
-                }
-            }
 
-            // Diese Methode wird jetzt ausschließlich im sicheren 30-Sekunden-Takt aufgerufen!
-            void request_wpumpe_frei_status() {
-                if (this->connector_ != nullptr) {
-                this->connector_->write_byte(0x04); // EOT
-                this->connector_->write_str("0011");
-                this->connector_->write_byte(0x02); // STX
-                
-                // Sende den vollständigen 4-Zeichen Befehl
-                this->connector_->write_str("PA06"); 
-                this->connector_->write_byte(0x03); // ETX
-                this->connector_->write_byte(0x33); // BCC
-                this->connector_->write_byte(0x04); // EOT
-                
-                ESP_LOGD("wr3223", "Sichere Statusabfrage für PA06 via Haupt-Update ausgeführt.");
+                // Fragt das Register ab unter Einhaltung des binären Hermes-Protokolls
+                void request_wpumpe_frei_status() {
+                    if (this->connector_ != nullptr) {
+                    this->connector_->write_byte(0x04); // EOT (Reset)
+                    this->connector_->write_str("0011"); // Gruppenadresse
+                    this->connector_->write_byte(0x02); // STX
+                    
+                    // KORREKTUR: "PA" als Befehl + das Register 0x06 als rohes Byte senden!
+                    this->connector_->write_str("PA"); 
+                    this->connector_->write_byte(0x06); // Das rohe Binär-Byte für Register 6
+                    
+                    this->connector_->write_byte(0x03); // ETX
+                    
+                    // BCC neu berechnen: 'P' (0x50) ^ 'A' (0x41) ^ 0x06 = 0x17
+                    this->connector_->write_byte(0x17); 
+                    
+                    this->connector_->write_byte(0x04); // EOT
+                    
+                    ESP_LOGD("wr3223", "Protokollkonforme Binär-Abfrage für Register PA(0x06) gesendet.");
+                    }
                 }
-            }
+
 
             WR3223Connector *connector_{nullptr};
             WR3223RelaisComponent *relais_component_{nullptr};
