@@ -6,6 +6,7 @@
 
 namespace esphome
 {
+    namespace sensor { class Sensor; }
     namespace wr3223
     {
 
@@ -92,17 +93,10 @@ namespace esphome
         public:
             void set_wr3223_parent(WR3223 *parent) { this->parent_ = parent; }
             
-            // Korrigiert: Nutzt den eindeutigen, globalen Namespace-Pfad für Sensoren
+            // Verknüpft den Zeiger auf das Sensor-Objekt
             void set_status_sensor(::esphome::sensor::Sensor *sens) { this->status_sensor_ = sens; }
 
-            void setup() override {
-                if (this->status_sensor_ != nullptr) {
-                    this->status_sensor_->add_on_state_callback([this](float value) {
-                        // 1.0 oder höher bedeutet freigegeben (true)
-                        this->publish_state(value >= 1.0f);
-                    });
-                }
-            }
+            void setup() override; // Die Logik wandert wegen des Typ-Zugriffs in die .cpp
 
             void write_state(bool state) override {
                 if (this->parent_ != nullptr) {
@@ -113,7 +107,7 @@ namespace esphome
 
         protected:
             WR3223 *parent_{nullptr};
-            ::esphome::sensor::Sensor *status_sensor_{nullptr}; // Korrigiert
+            ::esphome::sensor::Sensor *status_sensor_{nullptr}; 
         };
 
     } // namespace wr3223
