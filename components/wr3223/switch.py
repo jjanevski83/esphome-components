@@ -79,11 +79,18 @@ async def build_param_switch(switches_conf, key, class_, wr3223_parent, status_c
     var = await switch.new_switch(conf)
     await cg.register_component(var, conf)
     
-    # Verknüpfung mit der Hauptkomponente für die Sende-Befehle
+    # 1. Hauptkomponente für die Sende-Befehle verknüpfen
     cg.add(var.set_wr3223_parent(wr3223_parent))
     
-    # Verknüpfung mit der Statuskomponente für die ausgelesenen Updates
-    cg.add(var.set_status_component(status_comp))
+    # 2. Den automatisch generierten PA06-Sensor auflösen und an den Switch übergeben
+    # Da der Sensor "PA06" heißt, holen wir uns dessen Variable aus dem ESPHome-Core
+    try:
+        pa06_sensor = await cg.get_variable("PA06")
+        cg.add(var.set_status_sensor(pa06_sensor))
+    except:
+        # Falls der Sensor in der YAML deaktiviert oder umbenannt wurde, 
+        # fangen wir das hier ab, damit der Switch trotzdem baut
+        pass
 
 
 async def to_code(config):
