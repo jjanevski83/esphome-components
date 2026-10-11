@@ -63,22 +63,44 @@ namespace esphome
 
             void write_wpumpe_frei(bool state) {
                 if (this->connector_ != nullptr) {
-                    // Konstruiert "PA0601" oder "PA0600"
+                    // Konstruiert den reinen Nutzdaten-String, z.B. "PA0601" oder "PA0600"
                     std::string cmd = state ? "PA0601" : "PA0600";
                     
-                    // Nutze die native Queue deines Connectors! 
-                    // Die Methode heißt laut Log für Schreibkommandos meist "add_write_command" oder "add_command".
-                    // Da "SW" als write=1 gesendet wird (Zeile 328), triggern wir hier ein Write-Kommando:
-                    this->connector_->add_write_command(cmd); 
+                    // 1. Telegramm-Kopf: EOT (0x04) + Gruppenadresse "0011"
+                    this->connector_->write_byte(0x04);
+                    this->connector_->write_str("0011");
                     
-                    ESP_LOGD("wr3223", "Parameter %s zur Connector-Queue hinzugefügt.", cmd.c_str());
+                    // 2. Nutzdaten-Kopf: STX (0x02)
+                    this->connector_->write_byte(0x02);
+                    
+                    // 3. Der eigentliche Befehl ("PA0601" / "PA0600")
+                    this->connector_->write_str(cmd.c_str());
+                    
+                    // 4. Telegramm-Ende: ETX (0x03) + abschließendes EOT (0x04)
+                    this->connector_->write_byte(0x03);
+                    this->connector_->write_byte(0x04);
+                    
+                    ESP_LOGD("wr3223", "Parameter WPumpeFrei erfolgreich an Steuerung gesendet: %s", cmd.c_str());
                 }
             }
+
             void request_wpumpe_frei_status() {
                 if (this->connector_ != nullptr) {
-                    // Sendet die Leseanfrage für Parameter 06 (write=0)
-                    // Analog zur Fehlerabfrage ER wird hier "PA06" in die Queue geschoben
-                    this->connector_->add_command("PA06"); 
+                    // 1. Telegramm-Kopf: EOT (0x04) + Gruppenadresse "0011"
+                    this->connector_->write_byte(0x04);
+                    this->connector_->write_str("0011");
+                    
+                    // 2. Nutzdaten-Kopf: STX (0x02)
+                    this->connector_->write_byte(0x02);
+                    
+                    // 3. Lese-Befehl für Parameterregister 06 abfeuern
+                    this->connector_->write_str("PA06");
+                    
+                    // 4. Telegramm-Ende: ETX (0x03) + abschließendes EOT (0x04)
+                    this->connector_->write_byte(0x03);
+                    this->connector_->write_byte(0x04);
+                    
+                    ESP_LOGD("wr3223", "Statusabfrage für PA06 (WPumpeFrei) gesendet.");
                 }
             }
 
