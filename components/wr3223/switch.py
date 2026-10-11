@@ -16,16 +16,13 @@ WR3223AdditionalHeatingSwitch = wr3223_ns.class_(
     "WR3223AdditionalHeatingSwitch", WR3223StatusSwitch
 )
 WR3223CoolingSwitch = wr3223_ns.class_("WR3223CoolingSwitch", WR3223StatusSwitch)
-# 1. Neue Klasse oben deklarieren:
-WR3223WPumpeFreiSwitch = wr3223_ns.class_("WR3223WPumpeFreiSwitch", WR3223StatusSwitch)
+
 
 
 CONF_SWITCHES = "switches"
 CONF_HEAT_PUMP = "heat_pump"
 CONF_ADDITIONAL_HEATING = "additional_heating"
 CONF_COOLING = "cooling"
-# 2. Neuen Key definieren:
-CONF_WPUMPE_FREI = "wpumpe_frei"
 
 def _switch_schema(class_, default_name: str, default_icon: str):
     return (
@@ -58,12 +55,7 @@ CONFIG_SCHEMA = cv.Schema(
                     "Kühlung",
                     "mdi:snowflake",
                 ),
-                # 3. Im CONFIG_SCHEMA unter cv.Optional(CONF_SWITCHES) hinzufügen:
-                cv.Optional(CONF_WPUMPE_FREI, default={}): _switch_schema(
-                    WR3223WPumpeFreiSwitch,
-                    "Wärmepumpe Freigabe",
-                    "mdi:lock-open-outline",
-                ),
+                
             }
         ),
     }
@@ -86,4 +78,4 @@ async def to_code(config):
     await build(CONF_ADDITIONAL_HEATING, WR3223AdditionalHeatingSwitch)
     await build(CONF_COOLING, WR3223CoolingSwitch)
     # 4. Am Ende der to_code(config) Funktion den Build-Aufruf ergänzen:
-    await build(CONF_WPUMPE_FREI, WR3223WPumpeFreiSwitch)
+    
