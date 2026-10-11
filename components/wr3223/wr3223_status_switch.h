@@ -87,17 +87,23 @@ namespace esphome
         };*/
 
         class WR3223WPumpeFreiParamSwitch : public switch_::Switch,
-                                           public Component,
-                                           public WR3223StatusControl
+                                           public Component
         {
         public:
-            void set_status_component(WR3223StatusComponent *status) { status_ = status; }
             void set_wr3223_parent(WR3223 *parent) { parent_ = parent; }
 
             void setup() override {
-                // Beim Systemstart den aktuellen Zustand einmalig anfordern
-                if (parent_ != nullptr) {
-                    parent_->request_wpumpe_frei_status();
+                // Suche in der App nach dem automatisch erstellten PA06 Sensor
+                for (auto *sens : App.get_sensors()) {
+                    // Der Sensor-Name oder die ID wird vom Python-Framework vergeben
+                    // Wir lauschen auf jede Zustandsänderung des PA06-Status-Sensors
+                    if (sens->get_name() == "Wärmepumpe EEPROM Status") {
+                        sens->add_on_state_callback([this](float value) {
+                            // Wenn der Sensor 1.0 liefert, ist die WP frei (true)
+                            this->publish_state(value >= 1.0f);
+                        });
+                        break;
+                    }
                 }
             }
 
@@ -107,22 +113,6 @@ namespace esphome
                 }
                 this->publish_state(state);
             }
-
-            // Wird aufgerufen, sobald die Status-Komponente neue Daten verarbeitet
-            void on_status(WR3223StatusValueHolder *holder) override {
-                if (holder != nullptr) {
-                    // Da getWPumpeFreiStatus im Holder fehlt, greifen wir direkt 
-                    // bitweise auf den ermittelten SW-Status zu.
-                    // Laut Log entspricht das Bit für WPumpeFrei dem Wert 0x40.
-                    // Ist das Bit NICHT gesetzt (~), ist die WP freigegeben.
-                    bool current = !(holder->getSwStatus() & 0x40);
-                    this->publish_state(current);
-                }
-            }
-
-        protected:
-            WR3223StatusComponent *status_{nullptr};
-            WR3223 *parent_{nullptr};
         };
 
     } // namespace wr3223
