@@ -43,7 +43,7 @@ namespace esphome
             /// @return
             bool is_startup_completed() { return fresh_start_ == false; }
 
-            void write_wpumpe_frei(bool state) {
+            /*void write_wpumpe_frei(bool state) {
                 if (this->connector_ != nullptr) {
                     // Konstruiert "PA0601" (Freigabe) oder "PA0600" (Sperre)
                     std::string cmd = state ? "PA0601" : "PA0600";
@@ -58,6 +58,27 @@ namespace esphome
                     this->connector_->write_byte(0x03);
                     
                     ESP_LOGD("wr3223", "Parameter WPumpeFrei via Connector gesendet: %s", cmd.c_str());
+                }
+            }*/
+
+            void write_wpumpe_frei(bool state) {
+                if (this->connector_ != nullptr) {
+                    // Konstruiert "PA0601" oder "PA0600"
+                    std::string cmd = state ? "PA0601" : "PA0600";
+                    
+                    // Nutze die native Queue deines Connectors! 
+                    // Die Methode heißt laut Log für Schreibkommandos meist "add_write_command" oder "add_command".
+                    // Da "SW" als write=1 gesendet wird (Zeile 328), triggern wir hier ein Write-Kommando:
+                    this->connector_->add_write_command(cmd); 
+                    
+                    ESP_LOGD("wr3223", "Parameter %s zur Connector-Queue hinzugefügt.", cmd.c_str());
+                }
+            }
+            void request_wpumpe_frei_status() {
+                if (this->connector_ != nullptr) {
+                    // Sendet die Leseanfrage für Parameter 06 (write=0)
+                    // Analog zur Fehlerabfrage ER wird hier "PA06" in die Queue geschoben
+                    this->connector_->add_command("PA06"); 
                 }
             }
 

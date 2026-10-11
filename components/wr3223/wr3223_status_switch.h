@@ -65,7 +65,7 @@ namespace esphome
             }
         };
 
-        class WR3223WPumpeFreiParamSwitch : public switch_::Switch, public Component
+        /*class WR3223WPumpeFreiParamSwitch : public switch_::Switch, public Component
         {
         public:
             void set_wr3223_parent(WR3223 *parent) { parent_ = parent; }
@@ -83,6 +83,53 @@ namespace esphome
             }
 
         protected:
+            WR3223 *parent_{nullptr};
+        };*/
+
+         class WR3223WPumpeFreiParamSwitch : public switch_::Switch,
+                                           public Component,
+                                           public WR3223StatusControl,
+                                           public PollingComponent // Neu: Für zyklisches Abfragen
+        {
+        public:
+            // Wir pollen alle 60 Sekunden den echten Zustand aus der Anlage
+            WR3223WPumpeFreiParamSwitch() : PollingComponent(60000) {}
+
+            void set_status_component(WR3223StatusComponent *status) { status_ = status; }
+            void set_wr3223_parent(WR3223 *parent) { parent_ = parent; }
+
+            void setup() override {
+                // Initialer Zustand abfragen
+                if (parent_ != nullptr) {
+                    parent_->request_wpumpe_frei_status();
+                }
+            }
+
+            void update() override {
+                // Zyklische Abfrage an die Queue senden
+                if (parent_ != nullptr && this->is_ready()) {
+                    parent_->request_wpumpe_frei_status();
+                }
+            }
+
+            void write_state(bool state) override {
+                if (parent_ != nullptr) {
+                    parent_->write_wpumpe_frei(state);
+                }
+                this->publish_state(state);
+            }
+
+            // Diese Methode wird automatisch aufgerufen, wenn neue Daten vom ESP decodiert wurden
+            void on_status(WR3223StatusValueHolder *holder) override {
+                if (holder != nullptr) {
+                    // Nutzt die getWPumpeFreiStatus()-Methode, die wir im Holder verbaut haben
+                    bool current = holder->getWPumpeFreiStatus();
+                    this->publish_state(current);
+                }
+            }
+
+        protected:
+            WR3223StatusComponent *status_{nullptr};
             WR3223 *parent_{nullptr};
         };
 

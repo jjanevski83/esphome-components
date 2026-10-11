@@ -73,7 +73,7 @@ CONFIG_SCHEMA = cv.Schema(
     }
 )
 
-
+"""
 async def to_code(config):
     wr3223_parent = await cg.get_variable(config[CONF_WR3223_ID]) # NEU
     status_comp = await cg.get_variable(config[CONF_WR3223_STATUS_COMPONENT_ID])
@@ -97,3 +97,19 @@ async def to_code(config):
     await build(CONF_ADDITIONAL_HEATING, WR3223AdditionalHeatingSwitch)
     await build(CONF_COOLING, WR3223CoolingSwitch)
     await build(CONF_WPUMPE_FREI, WR3223WPumpeFreiParamSwitch, is_param=True) # NEU
+"""
+async def build(key, class_, is_param=False):
+        conf = switches_conf.get(key, {})
+        if conf.get(CONF_DEACTIVATE):
+            return
+        var = await switch.new_switch(conf)
+        await cg.register_component(var, conf)
+        
+        # JEDER Switch bekommt die Status-Komponente für eingehende Updates
+        cg.add(var.set_status_component(status_comp))
+        
+        if is_param:
+            # Parameter-Switches bekommen zusätzlich das Parent-Objekt für direkte Befehle
+            cg.add(var.set_wr3223_parent(wr3223_parent))
+            # Registriere es als Polling-Component im ESPHome-Core
+            await cg.register_parented(var, config[CONF_WR3223_ID])
