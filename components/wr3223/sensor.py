@@ -35,7 +35,7 @@ SENSOR_COMMANDS = {
     "NZ": ("Drehzahl Zuluft", "rpm", DEVICE_CLASS_FREQUENCY),
     "T4": ("Raumtemperatur", UNIT_CELSIUS, DEVICE_CLASS_TEMPERATURE),
     # NEU: Das Auslesen von PA06 als Sensor registrieren
-    "PA06": ("Wärmepumpe EEPROM Status", "", None), 
+    "PA06": ("Wärmepumpe EEPROM Status", "", ""),
 }
 
 CONF_COMMAND = "command"
@@ -64,8 +64,10 @@ CONFIG_SCHEMA = cv.Schema(
                         cv.GenerateID(CONF_SENSOR_POLLING_COMPONENT_ID): cv.declare_id(WR3223SensorPollingComponent),
                         cv.Optional(CONF_DEACTIVATE, default=False): cv.boolean,  # Sensor deaktivieren
                         cv.Optional(CONF_NAME, default=SENSOR_COMMANDS[k][0]): cv._validate_entity_name,
-                        cv.Optional(CONF_UNIT_OF_MEASUREMENT, default=SENSOR_COMMANDS[k][1]): sensor.validate_unit_of_measurement,
-                        cv.Optional(CONF_DEVICE_CLASS, default=SENSOR_COMMANDS[k][2]): sensor.validate_device_class,
+                        #cv.Optional(CONF_UNIT_OF_MEASUREMENT, default=SENSOR_COMMANDS[k][1]): sensor.validate_unit_of_measurement,
+                        #cv.Optional(CONF_DEVICE_CLASS, default=SENSOR_COMMANDS[k][2]): sensor.validate_device_class,
+                        cv.Optional(CONF_UNIT_OF_MEASUREMENT): sensor.validate_unit_of_measurement,
+                        cv.Optional(CONF_DEVICE_CLASS): sensor.validate_device_class,
                     }
                 )
                 .extend(cv.polling_component_schema("60s"))
