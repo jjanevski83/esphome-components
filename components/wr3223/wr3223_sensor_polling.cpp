@@ -47,6 +47,39 @@ namespace esphome
                 ESP_LOGD(TAG, "TextSensor für %s: %s", command_, response);
                 text_sensor_->publish_state(response);
             }
+
+/*
+*/
+if (command == "DU" && response != nullptr) {
+    ESP_LOGI("wr3223_dump", "=== HERMES EEPROM REGISTER MAP (DU) ===");
+    std::string resp_str(response);
+    int reg_index = 0;
+    
+    for (size_t i = 0; i < resp_str.length() - 1; i += 2) {
+        std::string hex_byte = resp_str.substr(i, 2);
+        int reg_value = std::stol(hex_byte, nullptr, 16); 
+        
+        switch(reg_index) {
+            case 1:  ESP_LOGI("wr3223_dump", "  [0x01] Lüfterstufe 1 Leistung: %d %%", reg_value); break;
+            case 2:  ESP_LOGI("wr3223_dump", "  [0x02] Lüfterstufe 2 Leistung: %d %%", reg_value); break;
+            case 3:  ESP_LOGI("wr3223_dump", "  [0x03] Lüfterstufe 3 Leistung: %d %%", reg_value); break;
+            case 5:  ESP_LOGI("wr3223_dump", "  [0x05] ZuHeizFrei (Zusatzheizung): %s", (reg_value == 1 ? "FREIGEGEBEN" : "GESPERRT")); break;
+            case 6:  
+                ESP_LOGI("wr3223_dump", "  [0x06] WPumpeFREI (Wärmepumpe):    %s <--- CONFIG STATUS", (reg_value == 1 ? "FREIGEGEBEN" : "GESPERRT")); 
+                break;
+            default:
+                if (reg_index <= 15) { 
+                    ESP_LOGI("wr3223_dump", "  [0x%02X] Allgemeines Register: %d (Hex: 0x%02X)", reg_index, reg_value, reg_value);
+                }
+                break;
+        }
+        reg_index++;
+    }
+    ESP_LOGI("wr3223_dump", "========================================");
+}
+/*
+*/
+
         }
 
     } // namespace wr3223
