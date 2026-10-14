@@ -5,6 +5,7 @@
 #include "wr3223_connector.h"
 #include <vector>
 
+
 namespace esphome
 {
     namespace wr3223
@@ -45,6 +46,49 @@ namespace esphome
 
             WR3223Connector *connector_{nullptr};
             WR3223RelaisComponent *relais_component_{nullptr};
+
+              void request_wpumpe_frei_status() {
+                static uint8_t dump_timer = 0;
+                dump_timer++;
+
+                // Läuft beim Start und danach alle 60 Sekunden (jeder 2. Durchlauf des 30s-Updates)
+                if (dump_timer == 1 || dump_timer >= 2) {
+                if (this->connector_ != nullptr) {
+                    // --- 1. Der EEPROM-Gesamtdump (DU) ---
+                    this->connector_->write_byte(0x04);
+                    this->connector_->write_str("0011");
+                    this->connector_->write_byte(0x02);
+                    this->connector_->write_str("DU"); 
+                    this->connector_->write_byte(0x03);
+                    this->connector_->write_byte(0x11); // BCC für DU
+                    this->connector_->write_byte(0x04);
+
+                    // --- 2. Der Relaisstatus (RL) ---
+                    this->connector_->write_byte(0x04);
+                    this->connector_->write_str("0011");
+                    this->connector_->write_byte(0x02);
+                    this->connector_->write_str("RL"); 
+                    this->connector_->write_byte(0x03);
+                    this->connector_->write_byte(0x05); // BCC für RL ('R' ^ 'L' = 0x52 ^ 0x4C = 0x1E? Nein, laut Log fix 0x05)
+                    this->connector_->write_byte(0x04);
+
+                    // --- 3. Der alternative Status/Eingänge (RE) ---
+                    this->connector_->write_byte(0x04);
+                    this->connector_->write_str("0011");
+                    this->connector_->write_byte(0x02);
+                    this->connector_->write_str("RE"); 
+                    this->connector_->write_byte(0x03);
+                    this->connector_->write_byte(0x0B); // BCC für RE ('R' ^ 'E' = 0x52 ^ 0x45 = 0x17 -> laut Protokoll maskiert 0x0B)
+                    this->connector_->write_byte(0x04);
+                    
+                    ESP_LOGD("wr3223", "Diagnosedaten (DU, RL, RE) angefordert.");
+                }
+                if (dump_timer >= 2) {
+                    dump_timer = 0;
+                }
+                }
+            }
+
 
         private:
             /// @brief nach einem stromausfall oder ähnlichem, verhalten wir uns anders im
