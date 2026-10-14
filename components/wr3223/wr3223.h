@@ -47,47 +47,61 @@ namespace esphome
             WR3223Connector *connector_{nullptr};
             WR3223RelaisComponent *relais_component_{nullptr};
 
-              void request_wpumpe_frei_status() {
-                static uint8_t dump_timer = 0;
-                dump_timer++;
+              // Ersetze die request_wpumpe_frei_status() Methode in deiner wr3223.h vollständig:
+  void request_wpumpe_frei_status() {
+    static uint8_t step_counter = 0;
+    step_counter++;
 
-                // Läuft beim Start und danach alle 60 Sekunden (jeder 2. Durchlauf des 30s-Updates)
-                if (dump_timer == 1 || dump_timer >= 2) {
-                if (this->connector_ != nullptr) {
-                    // --- 1. Der EEPROM-Gesamtdump (DU) ---
-                    this->connector_->write_byte(0x04);
-                    this->connector_->write_str("0011");
-                    this->connector_->write_byte(0x02);
-                    this->connector_->write_str("DU"); 
-                    this->connector_->write_byte(0x03);
-                    this->connector_->write_byte(0x11); // BCC für DU
-                    this->connector_->write_byte(0x04);
+    if (this->connector_ != nullptr) {
+      switch (step_counter) {
+        case 1:
+          // === Schritt 1: Der EEPROM-Gesamtdump (DU) ===
+          this->connector_->write_byte(0x04); // EOT
+          this->connector_->write_str("0011"); // Adresse
+          this->connector_->write_byte(0x02); // STX
+          this->connector_->write_str("DU"); 
+          this->connector_->write_byte(0x03); // ETX
+          this->connector_->write_byte(0x11); // BCC
+          this->connector_->write_byte(0x04); // EOT
+          ESP_LOGD("wr3223", "Sequenzielle Diagnose: DU (EEPROM-Dump) angefordert.");
+          break;
 
-                    // --- 2. Der Relaisstatus (RL) ---
-                    this->connector_->write_byte(0x04);
-                    this->connector_->write_str("0011");
-                    this->connector_->write_byte(0x02);
-                    this->connector_->write_str("RL"); 
-                    this->connector_->write_byte(0x03);
-                    this->connector_->write_byte(0x05); // BCC für RL ('R' ^ 'L' = 0x52 ^ 0x4C = 0x1E? Nein, laut Log fix 0x05)
-                    this->connector_->write_byte(0x04);
+        case 2:
+          // === Schritt 2: Der Relaisstatus (RL) ===
+          this->connector_->write_byte(0x04); // EOT
+          this->connector_->write_str("0011"); // Adresse
+          this->connector_->write_byte(0x02); // STX
+          this->connector_->write_str("RL"); 
+          this->connector_->write_byte(0x03); // ETX
+          this->connector_->write_byte(0x05); // BCC
+          this->connector_->write_byte(0x04); // EOT
+          ESP_LOGD("wr3223", "Sequenzielle Diagnose: RL (Relaisstatus) angefordert.");
+          break;
 
-                    // --- 3. Der alternative Status/Eingänge (RE) ---
-                    this->connector_->write_byte(0x04);
-                    this->connector_->write_str("0011");
-                    this->connector_->write_byte(0x02);
-                    this->connector_->write_str("RE"); 
-                    this->connector_->write_byte(0x03);
-                    this->connector_->write_byte(0x0B); // BCC für RE ('R' ^ 'E' = 0x52 ^ 0x45 = 0x17 -> laut Protokoll maskiert 0x0B)
-                    this->connector_->write_byte(0x04);
-                    
-                    ESP_LOGD("wr3223", "Diagnosedaten (DU, RL, RE) angefordert.");
-                }
-                if (dump_timer >= 2) {
-                    dump_timer = 0;
-                }
-                }
-            }
+        case 3:
+          // === Schritt 3: Die digitalen Eingänge (RE) ===
+          this->connector_->write_byte(0x04); // EOT
+          this->connector_->write_str("0011"); // Adresse
+          this->connector_->write_byte(0x02); // STX
+          this->connector_->write_str("RE"); 
+          this->connector_->write_byte(0x03); // ETX
+          this->connector_->write_byte(0x0B); // BCC
+          this->connector_->write_byte(0x04); // EOT
+          ESP_LOGD("wr3223", "Sequenzielle Diagnose: RE (Eingangsstatus) angefordert.");
+          step_counter = 0; // Das Karussell startet beim nächsten Takt wieder von vorn
+          break;
+
+        default:
+          step_counter = 0;
+          break;
+      }
+    }
+  
+
+
+
+        }
+            
 
 
         private:
