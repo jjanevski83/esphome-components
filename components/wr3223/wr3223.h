@@ -49,53 +49,47 @@ namespace esphome
 
               // Ersetze die request_wpumpe_frei_status() Methode in deiner wr3223.h vollständig:
   void request_wpumpe_frei_status() {
-    static uint8_t step_counter = 0;
-    step_counter++;
+        static uint8_t step_counter = 0;
+        step_counter++;
 
-    if (this->connector_ != nullptr) {
-      switch (step_counter) {
-        case 1:
-          // === Schritt 1: Der EEPROM-Gesamtdump (DU) ===
-          this->connector_->write_byte(0x04); // EOT
-          this->connector_->write_str("0011"); // Adresse
-          this->connector_->write_byte(0x02); // STX
-          this->connector_->write_str("DU"); 
-          this->connector_->write_byte(0x03); // ETX
-          this->connector_->write_byte(0x11); // BCC
-          this->connector_->write_byte(0x04); // EOT
-          ESP_LOGD("wr3223", "Sequenzielle Diagnose: DU (EEPROM-Dump) angefordert.");
-          break;
+        if (this->connector_ != nullptr) {
+          switch (step_counter) {
+            case 1:
+              // === Schritt 1: Echten EEPROM-Wert für WPumpeFrei abfragen ===
+              this->connector_->write_byte(0x04); // EOT
+              this->connector_->write_str("0011"); // Adresse
+              this->connector_->write_byte(0x02); // STX
+              
+              // Das "?" zwingt die Firmware, den aktuellen EEPROM-Wert zu senden!
+              this->connector_->write_str("PA06?"); 
+              
+              this->connector_->write_byte(0x03); // ETX
+              // BCC für PA06? ('P' ^ 'A' ^ '0' ^ '6' ^ '?') = 0x50 ^ 0x41 ^ 0x30 ^ 0x36 ^ 0x3F = 0x0C
+              this->connector_->write_byte(0x0C); 
+              this->connector_->write_byte(0x04); // EOT
+              ESP_LOGD("wr3223", "Echte Hardware-Abfrage für WPumpeFrei (PA06?) gesendet.");
+              break;
 
-        case 2:
-          // === Schritt 2: Der Relaisstatus (RL) ===
-          this->connector_->write_byte(0x04); // EOT
-          this->connector_->write_str("0011"); // Adresse
-          this->connector_->write_byte(0x02); // STX
-          this->connector_->write_str("RL"); 
-          this->connector_->write_byte(0x03); // ETX
-          this->connector_->write_byte(0x05); // BCC
-          this->connector_->write_byte(0x04); // EOT
-          ESP_LOGD("wr3223", "Sequenzielle Diagnose: RL (Relaisstatus) angefordert.");
-          break;
+            case 2:
+              // === Schritt 2: Der Relaisstatus (RL) ===
+              this->connector_->write_byte(0x04); this->connector_->write_str("0011"); this->connector_->write_byte(0x02);
+              this->connector_->write_str("RL"); this->connector_->write_byte(0x03); this->connector_->write_byte(0x05); this->connector_->write_byte(0x04);
+              ESP_LOGD("wr3223", "Sequenzielle Diagnose: RL (Relaisstatus) angefordert.");
+              break;
 
-        case 3:
-          // === Schritt 3: Die digitalen Eingänge (RE) ===
-          this->connector_->write_byte(0x04); // EOT
-          this->connector_->write_str("0011"); // Adresse
-          this->connector_->write_byte(0x02); // STX
-          this->connector_->write_str("RE"); 
-          this->connector_->write_byte(0x03); // ETX
-          this->connector_->write_byte(0x0B); // BCC
-          this->connector_->write_byte(0x04); // EOT
-          ESP_LOGD("wr3223", "Sequenzielle Diagnose: RE (Eingangsstatus) angefordert.");
-          step_counter = 0; // Das Karussell startet beim nächsten Takt wieder von vorn
-          break;
+            case 3:
+              // === Schritt 3: Die digitalen Eingänge (RE) ===
+              this->connector_->write_byte(0x04); this->connector_->write_str("0011"); this->connector_->write_byte(0x02);
+              this->connector_->write_str("RE"); this->connector_->write_byte(0x03); this->connector_->write_byte(0x0B); this->connector_->write_byte(0x04);
+              ESP_LOGD("wr3223", "Sequenzielle Diagnose: RE (Eingangsstatus) angefordert.");
+              step_counter = 0; // Karussell zurücksetzen
+              break;
 
-        default:
-          step_counter = 0;
-          break;
-      }
-    }
+            default:
+              step_counter = 0;
+              break;
+          }
+        }
   
 
 
