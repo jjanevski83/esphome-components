@@ -47,6 +47,27 @@ namespace esphome
 
 /*
 */
+
+// === NEU: VERARBEITUNG DER ECHTEN HARDWARE-RÜCKMELDUNG FÜR WPUMPEFREI ===
+      std::string resp_str(response);
+      if (resp_str.find("PA06") != std::string::npos) {
+          // Extrahiere die letzten beiden Zeichen (00 oder 01)
+          std::string val_str = resp_str.substr(4, 2);
+          bool ist_physisch_frei = (val_str == "01");
+
+          ESP_LOGI("wr3223_safety", "=== HARDWARE VERIFIKATION (EEPROM) ===");
+          ESP_LOGI("wr3223_safety", "  Echter EEPROM-Wert WPumpeFrei: %s", (ist_physisch_frei ? "1 (FREIGEGEBEN)" : "0 (GESPERRT)"));
+
+          // Absolute Sicherheitsverriegelung auf dem ESP32:
+          if (!ist_physisch_frei) {
+              ESP_LOGE("wr3223_safety", "  -> SPERRE AKTIV: Kompressor-Aktivierung wird blockiert!");
+          } else {
+              ESP_LOGI("wr3223_safety", "  -> OK: Kompressor-Aktivierung ist sicher freigegeben.");
+          }
+          ESP_LOGI("wr3223_safety", "=======================================");
+          return; // Paket verarbeitet
+      }
+
       int relais_status = std::stoi(response); // Direkt die Datenbits als Integer interpretieren
 
       // ===================================================================
