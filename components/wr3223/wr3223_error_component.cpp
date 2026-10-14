@@ -108,7 +108,7 @@ namespace esphome
           if (error_code & 32)  ESP_LOGW("wr3223_error", "    [Bit 5] Hinweis: Filterlaufzeit abgelaufen");
       }
       ESP_LOGI("wr3223_error", "==========================================");
-    }
+    
 /*
 */
     }
