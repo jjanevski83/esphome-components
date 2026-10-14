@@ -94,22 +94,21 @@ namespace esphome
 
 /*
 */
-// === KLARTEXT-PARSER FÜR DAS FEHLERREGISTER (ER) ===
-int error_code = WR3223Helper::to_int(response, true);
-
-ESP_LOGI("wr3223_error", "=== HERMES FEHLERREGISTER-ANALYSE (ER) ===");
-if (error_code == 0) {
-    ESP_LOGI("wr3223_error", "  -> Status: ALLES OK - Keine aktuellen Hardware-Fehler.");
-} else {
-    ESP_LOGW("wr3223_error", "  Achtung! Folgende Störungen liegen aktiv an:");
-    if (error_code & 1)   ESP_LOGE("wr3223_error", "    [Bit 0] Fehler: Zuluftventilator blockiert / Drehzahlfehler");
-    if (error_code & 2)   ESP_LOGE("wr3223_error", "    [Bit 1] Fehler: Abluftventilator blockiert / Drehzahlfehler");
-    if (error_code & 4)   ESP_LOGE("wr3223_error", "    [Bit 2] ALARM: Frostschutz aktiv (Vereisungsgefahr!)");
-    if (error_code & 8)   ESP_LOGE("wr3223_error", "    [Bit 3] Fehler: Sensor-Defekt / Kurzschluss an T1-T8");
-    if (error_code & 16)  ESP_LOGE("wr3223_error", "    [Bit 4] ALARM: Pressostat Kältekreis ausgelöst (Hoch-/Niederdruck)");
-    if (error_code & 32)  ESP_LOGW("wr3223_error", "    [Bit 5] Hinweis: Filterlaufzeit abgelaufen");
-}
-ESP_LOGI("wr3223_error", "==========================================");
+ // === KORRIGIERTER KLARTEXT-PARSER (Nutzt das bestehende error_code) ===
+      ESP_LOGI("wr3223_error", "=== HERMES FEHLERREGISTER-ANALYSE (ER) ===");
+      if (error_code == 0) {
+          ESP_LOGI("wr3223_error", "  -> Status: ALLES OK - Keine aktuellen Hardware-Fehler.");
+      } else {
+          ESP_LOGW("wr3223_error", "  Achtung! Folgende Störungen liegen aktiv an:");
+          if (error_code & 1)   ESP_LOGE("wr3223_error", "    [Bit 0] Fehler: Zuluftventilator blockiert / Drehzahlfehler");
+          if (error_code & 2)   ESP_LOGE("wr3223_error", "    [Bit 1] Fehler: Abluftventilator blockiert / Drehzahlfehler");
+          if (error_code & 4)   ESP_LOGE("wr3223_error", "    [Bit 2] ALARM: Frostschutz aktiv (Vereisungsgefahr!)");
+          if (error_code & 8)   ESP_LOGE("wr3223_error", "    [Bit 3] Fehler: Sensor-Defekt / Kurzschluss an T1-T8");
+          if (error_code & 16)  ESP_LOGE("wr3223_error", "    [Bit 4] ALARM: Pressostat Kältekreis ausgelöst (Hoch-/Niederdruck)");
+          if (error_code & 32)  ESP_LOGW("wr3223_error", "    [Bit 5] Hinweis: Filterlaufzeit abgelaufen");
+      }
+      ESP_LOGI("wr3223_error", "==========================================");
+    }
 /*
 */
     }

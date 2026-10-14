@@ -20,6 +20,11 @@ namespace esphome
                 ESP_LOGI(TAG, "WR3223 Hauptkomponente FreshStart im Update wird ausgeführt!");
                 relais_component_->update();                
             }
+
+            // NEU: Ruft die getaktete Schleife für DU, RL, RE, ER alle 60 Sekunden auf
+            if (!fresh_start_) {
+                this->request_wpumpe_frei_status();
+            }
         }
 
         void WR3223::dump_config()
